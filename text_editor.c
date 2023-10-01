@@ -38,7 +38,7 @@ void dashes(int);
 
 void newline(int);
 
-int take_choice(int *, char[]);
+int take_choice(int *, char[], string);
 
 void display_text(string);
 
@@ -50,7 +50,7 @@ int replace(string, string, string);
 
 void clear_screen();
 
-int contains_separator(char []);
+int contains_separator(char[], char[]);
 
 int is_alphanumeric(char);
 
@@ -80,7 +80,7 @@ int main()
     start:
     clear_buffer(buffer);
     refresh(main_text, notification);
-    if(!take_choice(&choice, notification)) goto start;
+    if(!take_choice(&choice, notification, main_text)) goto start;
     int main_text_len = length(main_text);
 
     switch(choice)
@@ -101,7 +101,7 @@ int main()
     }
 
     append:
-    printf("Please enter the text that you would like to append: ");
+    printf("Please enter the text that you would like to append:\n");
     if(!get_string(buffer, notification, main_text)) goto append;
     string input = new_string(buffer);
     append_string(main_text, input);
@@ -115,7 +115,11 @@ int main()
         goto start;
     }
     printf("Please enter the word that you would like to find: ");
-    if(!get_string(buffer, notification, main_text) || contains_separator(buffer)) goto search;
+    if(!get_string(buffer, notification, main_text) || contains_separator(buffer, notification))
+    {
+        refresh(main_text, notification);
+        goto search;
+    }
     string input2 = new_string(buffer);
     int occs = search(main_text, input2);
     search_ntf(occs, buffer, notification);
@@ -129,7 +133,11 @@ int main()
         goto start;
     }
     printf("Please enter the word that you would like to replace: ");
-    if(!get_string(buffer, notification, main_text) || contains_separator(buffer)) goto replace;
+    if(!get_string(buffer, notification, main_text) || contains_separator(buffer, notification))
+    {
+        refresh(main_text, notification);
+        goto replace;
+    }
     char replacable[BUFFER_SIZE+2];
     strcpy(replacable, buffer);
     string target = new_string(buffer);
@@ -153,7 +161,7 @@ int main()
         goto start;
     }
     printf("Are you sure? All of your text will be lost. (1 = Delete | 0 = Cancel)\n");
-    if(!take_choice(&choice, notification)) 
+    if(!take_choice(&choice, notification, main_text)) 
     {
         refresh(main_text, notification);
         goto delete_option;
@@ -173,7 +181,7 @@ int main()
 
     exit_option:
     printf("Are you sure that you want to exit the program? (1 = Exit | 0 = Cancel)\n");
-    if(!take_choice(&choice, notification))
+    if(!take_choice(&choice, notification, main_text))
     {
         refresh(main_text, notification);
         goto exit_option;
@@ -350,7 +358,7 @@ void display_text(string str)
     newline(2);
 }
 
-int take_choice(int *choice, char ntf[])
+int take_choice(int *choice, char ntf[], string main_text)
 {
     printf("Your choice: ");
     if(scanf("%d", choice) != 1)
@@ -361,6 +369,7 @@ int take_choice(int *choice, char ntf[])
         return 0;
     }
     getchar();
+    refresh(main_text, ntf);
     return 1;
 }
 
@@ -480,14 +489,14 @@ int is_alphanumeric(char c)
     return (c > 47 && c < 58) || (c > 64 && c < 91) || (c > 96 && c < 123);
 }
 
-int contains_separator(char str[])
+int contains_separator(char str[], char ntf[])
 {
     int i = 0;
     while(str[i] != '\0')
     {
         if(!is_alphanumeric(str[i]))
         {
-            printf("\nYour input may only contain alphanumeric characters. (No spaces or symbols)\n\n");
+            strcpy(ntf, "\nYour input may only contain alphanumeric characters. (No spaces or symbols)\n\n");
             return 1;
         }
         i++;
@@ -558,7 +567,9 @@ void replace_ntf(int replaced, char replacable[], char buffer[], char ntf[])
 {
     if(replaced <= 0)
     {
-        strcpy(ntf, "\nNo words were replaced.\n");
+        strcpy(ntf, "\nNo words were replaced. (the word \"");
+        strcat(ntf, replacable);
+        strcat(ntf, "\" was not found in the text)\n");
     }
     else if(replaced == 1)
     {
