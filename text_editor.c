@@ -306,7 +306,7 @@ void append_char(string str, char letter)
     {
         curr = curr->next;
     }
-    curr->next = malloc(sizeof(node));
+    curr->next = (node*)malloc(sizeof(node));
     curr->next->letter = letter;
     curr->next->next = NULL;
 }
@@ -344,7 +344,7 @@ void append_string(string str1, string str2)
     node *curr2 = str2;
     for(int i = 0; i < len; i++)
     {
-        curr->next = malloc(sizeof(node));
+        curr->next = (node*)malloc(sizeof(node));
         curr->next->next = NULL;
         curr->next->letter = curr2->next->letter;
         curr = curr->next;
@@ -367,7 +367,7 @@ void free_string(string str)
 string new_string(char str[])
 {
 
-    node *head = malloc(sizeof(node));
+    node *head = (node*)malloc(sizeof(node));
     head->next = NULL;
     head->letter = '\0';
     int len = strlen(str);
@@ -511,12 +511,12 @@ int search(string text, string target)
 string create_segment_string(string str)
 {
     node *curr = str->next;
-    node *copy_head = malloc(sizeof(node));
+    node *copy_head = (node*)malloc(sizeof(node));
     node *copy = copy_head;
     while(curr != NULL)
     {
         copy->letter = curr->letter;
-        copy->next = curr->next == NULL ? NULL : malloc(sizeof(node));
+        copy->next = curr->next == NULL ? NULL : (node*)malloc(sizeof(node));
         copy = copy->next;
         curr = curr->next;
     }
