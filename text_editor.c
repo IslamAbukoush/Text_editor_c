@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BUFFER_SIZE 1000
+#define BUFFER_SIZE 10000
 
 typedef struct node
 {
@@ -101,7 +101,7 @@ int main()
     }
 
     append:
-    printf("Please enter the text that you would like to append:\n");
+    printf("Please enter the text that you would like to append(Max %d characters per append):\n", BUFFER_SIZE);
     if(!get_string(buffer, notification, main_text)) goto append;
     string input = new_string(buffer);
     append_string(main_text, input);
