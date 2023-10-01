@@ -24,7 +24,7 @@ void print(string);
 
 string new_string(char[]);
 
-int get_string(char[BUFFER_SIZE]);
+int get_string(char[BUFFER_SIZE], char[], string);
 
 void clear_buffer(char[BUFFER_SIZE]);
 
@@ -38,7 +38,7 @@ void dashes(int);
 
 void newline(int);
 
-void take_choice(int*);
+int take_choice(int *, char[]);
 
 void display_text(string);
 
@@ -50,8 +50,6 @@ int replace(string, string, string);
 
 void clear_screen();
 
-int is_separator(char);
-
 int contains_separator(char []);
 
 int is_alphanumeric(char);
@@ -60,243 +58,147 @@ int same_letter_insensitive(char a, char b);
 
 void display_notification(char[]);
 
+node *new_node(char c);
+
+void flush();
+
+void search_ntf(int, char[], char[]);
+
+void replace_ntf(int, char[], char[], char[]);
+
+void refresh(string, char[]);
+
 
 int main()
 {
+    int choice;
     char buffer[BUFFER_SIZE+2];
-    clear_buffer(buffer);
     char notification[BUFFER_SIZE+2];
     clear_buffer(notification);
-
-    int choice;
-
     string main_text = new_string("");
+
     start:
-    clear_screen();
-    display_notification(notification);
-    display_text(main_text);
-    display_options(main_text);
-    retake_choices:
-    take_choice(&choice);
-
+    clear_buffer(buffer);
+    refresh(main_text, notification);
+    if(!take_choice(&choice, notification)) goto start;
     int main_text_len = length(main_text);
-    if(choice == 1)
+
+    switch(choice)
     {
-        append:
-        printf("Please enter the text that you would like to append: ");
-        if(!get_string(buffer))
-        {
-            continue_prompt1:
-            printf("Would you like to try again? (1 to try again | 0 to choose another operation) ");
-            if(scanf("%d", &choice) != 1)
-            {
-                printf("\nInvalid input...\n");
-                goto continue_prompt1;
-            }
-            if(choice == 1){
-                int c;
-                while ((c = getchar()) != '\n' && c != EOF);
-                goto append;
-            }
-            else if(choice == 0) goto start;
-            else {
-                printf("\nInvalid input...\n");
-                goto continue_prompt1;
-            }
-        }
-        string input = new_string(buffer);
-        clear_buffer(buffer);
-        append_string(main_text, input);
-        free_string(input);
-    }
-    else if(choice == 2 && main_text_len > 0)
-    {
-        search:
-        printf("Please enter the word that you would like to find: ");
-        if(!get_string(buffer))
-        {
-            continue_prompt2:
-            printf("Would you like to try again? (1 = try again | 0 = back to options) ");
-            if(scanf("%d", &choice) != 1)
-            {
-                printf("\nInvalid input...\n");
-                goto continue_prompt2;
-            }
-            if(choice == 1){
-                int c;
-                while ((c = getchar()) != '\n' && c != EOF);
-                goto search;
-            }
-            else if(choice == 0) goto start;
-            else {
-                printf("\nInvalid input...\n");
-                goto continue_prompt2;
-            }
-        }
-        if(contains_separator(buffer))
-        {
-            printf("\nYour word contains a separator, your input may only contain alphanumeric characters.\n");
+        case 1:
+            goto append;
+        case 2:
             goto search;
-        }
-        char temp[BUFFER_SIZE+2];
-        strcpy(temp, buffer);
-        string input = new_string(buffer);
-        int occs = search(main_text, input);
-        if(occs <= 0)
-        {
-            strcpy(notification, "\nNo occurrences of the word \"");
-            strcat(notification, temp);
-            strcat(notification, "\" were found.\n");
-        }
-        else if(occs == 1)
-        {
-            strcpy(notification, "\n1 occurrence of the word \"");
-            strcat(notification, temp);
-            strcat(notification, "\" was found.\n");
-        }
-        else
-        {
-            strcpy(notification, "\n");
-
-            char number[BUFFER_SIZE+2];
-            sprintf(number, "%d", occs);
-
-            strcat(notification, number);
-
-            strcat(notification, " occurrences of the word \"");
-            strcat(notification, temp);
-            strcat(notification, "\" were found.\n");
-        }
-    }
-    else if(choice == 3 && main_text_len > 0)
-    {
-        replace:
-        printf("Please enter the word that you would like to replace: ");
-        if(!get_string(buffer))
-        {
-            continue_prompt3:
-            printf("Would you like to try again? (1 to try again | 0 to choose another operation) ");
-            if(scanf("%d", &choice) != 1)
-            {
-                printf("\nInvalid input...\n");
-                goto continue_prompt3;
-            }
-            if(choice == 1){
-                int c;
-                while ((c = getchar()) != '\n' && c != EOF);
-                goto replace;
-            }
-            else if(choice == 0) goto start;
-            else {
-                printf("\nInvalid input...\n");
-                goto continue_prompt3;
-            }
-        }
-        if(contains_separator(buffer))
-        {
-            printf("\nYour input may only contain alphanumeric characters. (No spaces or symbols)\n\n");
+        case 3:
             goto replace;
-        }
-        char temp1[BUFFER_SIZE+2];
-        strcpy(temp1, buffer);
-        string target = new_string(buffer);
-        clear_buffer(buffer);
-        replace_with:
-        printf("What do you want to replace it with: ");
-        if(!get_string(buffer))
-        {
-            continue_prompt4:
-            printf("Would you like to try again? (1 to try again | 0 back to options) ");
-            if(scanf("%d", &choice) != 1)
-            {
-                printf("\nInvalid input...\n");
-                goto continue_prompt4;
-            }
-            if(choice == 1){
-                int c;
-                while ((c = getchar()) != '\n' && c != EOF);
-                goto replace_with;
-            }
-            else if(choice == 0) goto start;
-            else {
-                printf("\nInvalid input...\n");
-                goto continue_prompt4;
-            }
-        }
-        char temp2[BUFFER_SIZE+2];
-        strcpy(temp2, buffer);
-        string replacement = new_string(buffer);
-        clear_buffer(buffer);
-        int replaced = replace(main_text, target, replacement);
-        if(replaced <= 0)
-        {
-            strcpy(notification, "\nNo words were replaced.\n");
-        }
-        else if(replaced == 1)
-        {
-            strcpy(notification, "\n1 occurrence of the word \"");
-            strcat(notification, temp1);
-            strcat(notification, "\" was replaced with \"");
-            strcat(notification, temp2);
-            strcat(notification, "\".\n");
-        }
-        else
-        {
-            strcpy(notification, "\n");
-
-            char number[BUFFER_SIZE+2];
-            sprintf(number, "%d", replaced);
-
-            strcat(notification, number);
-            strcat(notification, " occurrences of the word \"");
-            strcat(notification, temp1);
-            strcat(notification, "\" were replaced with \"");
-            strcat(notification, temp2);
-            strcat(notification, "\".\n");
-        }
-        free_string(target);
-        free_string(replacement);
-
-    }
-    else if(choice == 4 && main_text_len > 0)
-    {
-        delete_option:
-        printf("Are you sure? All of your text will be lost. (1 = Delete | 0 = Cancel)\n");
-        take_choice(&choice);
-        if(choice == 1)
-        {
-            clear_string(main_text);
-        }
-        else if(choice == 0){}
-        else
-        {
-            printf("\nInvalid input...\n");
+        case 4:
             goto delete_option;
-        }
-    }
-    else if(choice == 0)
-    {
-        exit_option:
-        printf("Are you sure that you want to exit the program? (1 = Exit | 0 = Cancel)\n");
-        take_choice(&choice);
-        if(choice == 1)
-        {
-            printf("\nFarewell...\n");
-            return 0;
-        }
-        else if(choice == 0){}
-        else
-        {
-            printf("\nInvalid input...\n");
+        case 0:
             goto exit_option;
-        }
+        default:
+            strcpy(notification, "\nInvalid input...\n");
+            goto start;
     }
-    else
-    {
-        printf("\nInvalid input...\n");
-        goto retake_choices;
-    }
+
+    append:
+    printf("Please enter the text that you would like to append: ");
+    if(!get_string(buffer, notification, main_text)) goto append;
+    string input = new_string(buffer);
+    append_string(main_text, input);
+    free_string(input);
     goto start;
+
+    search:
+    if(main_text_len <= 0)
+    {
+        strcpy(notification, "\nInvalid input...\n");
+        goto start;
+    }
+    printf("Please enter the word that you would like to find: ");
+    if(!get_string(buffer, notification, main_text) || contains_separator(buffer)) goto search;
+    string input2 = new_string(buffer);
+    int occs = search(main_text, input2);
+    search_ntf(occs, buffer, notification);
+    free_string(input2);
+    goto start;
+
+    replace:
+    if(main_text_len <= 0)
+    {
+        strcpy(notification, "\nInvalid input...\n");
+        goto start;
+    }
+    printf("Please enter the word that you would like to replace: ");
+    if(!get_string(buffer, notification, main_text) || contains_separator(buffer)) goto replace;
+    char replacable[BUFFER_SIZE+2];
+    strcpy(replacable, buffer);
+    string target = new_string(buffer);
+    clear_buffer(buffer);
+
+    replace_with:
+    printf("What do you want to replace it with: ");
+    if(!get_string(buffer, notification, main_text)) goto replace_with;
+    string replacement = new_string(buffer);
+    int replaced = replace(main_text, target, replacement);
+    replace_ntf(replaced, replacable, buffer, notification);
+    free_string(target);
+    free_string(replacement);
+    clear_buffer(buffer);
+    goto start;
+
+    delete_option:
+    if(main_text_len <= 0)
+    {
+        strcpy(notification, "\nInvalid input...\n");
+        goto start;
+    }
+    printf("Are you sure? All of your text will be lost. (1 = Delete | 0 = Cancel)\n");
+    if(!take_choice(&choice, notification)) 
+    {
+        refresh(main_text, notification);
+        goto delete_option;
+    }
+    switch(choice)
+    {
+    case 1:
+        clear_string(main_text);
+        goto start;
+    case 0:
+        goto start;
+    default:
+        strcpy(notification, "\nInvalid input...\n");
+        refresh(main_text, notification);
+        goto delete_option;
+    }
+
+    exit_option:
+    printf("Are you sure that you want to exit the program? (1 = Exit | 0 = Cancel)\n");
+    if(!take_choice(&choice, notification))
+    {
+        refresh(main_text, notification);
+        goto exit_option;
+    }
+    switch(choice)
+    {
+    case 1:
+        clear_screen();
+        printf("\nFarewell...\n");
+        return 0;
+    case 0:
+        goto start;
+    default:
+        strcpy(notification, "\nInvalid input...\n");
+        refresh(main_text, notification);
+        goto exit_option;
+    }
+}
+
+node *new_node(char c)
+{
+    node *result_node = (node*)malloc(sizeof(node));
+    result_node->letter = c;
+    result_node->next = NULL;
+    return result_node;
 }
 
 void append_char(string str, char letter)
@@ -306,9 +208,7 @@ void append_char(string str, char letter)
     {
         curr = curr->next;
     }
-    curr->next = (node*)malloc(sizeof(node));
-    curr->next->letter = letter;
-    curr->next->next = NULL;
+    curr->next = new_node(letter);
 }
 
 void print(string str)
@@ -344,9 +244,7 @@ void append_string(string str1, string str2)
     node *curr2 = str2;
     for(int i = 0; i < len; i++)
     {
-        curr->next = (node*)malloc(sizeof(node));
-        curr->next->next = NULL;
-        curr->next->letter = curr2->next->letter;
+        curr->next = new_node(curr2->next->letter);
         curr = curr->next;
         curr2 = curr2->next;
     }
@@ -367,9 +265,7 @@ void free_string(string str)
 string new_string(char str[])
 {
 
-    node *head = (node*)malloc(sizeof(node));
-    head->next = NULL;
-    head->letter = '\0';
+    node *head = new_node('\0');
     int len = strlen(str);
     if(len > 0) {
         for(int i = 0; i < len; i++)
@@ -386,19 +282,26 @@ void clear_string(string str)
     str->next = NULL;
 }
 
-int get_string(char buffer[])
+int get_string(char buffer[], char ntf[], string main_text)
 {
     clear_buffer(buffer);
     if(fgets(buffer, BUFFER_SIZE, stdin) == NULL) {
-        printf("\nInvalid input...\n");
+        strcpy(ntf, "\nInvalid input...\n");
+        refresh(main_text, ntf);
         return 0;
     }
     if(strchr(buffer, '\n') == NULL)
     {
-        printf("\nThe input exceeded the maximum amount of characters (%d chars)\n", BUFFER_SIZE);
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF);
+        strcpy(ntf, "\nThe input exceeded the maximum amount of characters (");
+
+        char number[BUFFER_SIZE+2];
+        sprintf(number, "%d", BUFFER_SIZE);
+
+        strcat(ntf, number);
+        strcat(ntf, " chars)\n");
+        flush();
         clear_buffer(buffer);
+        refresh(main_text, ntf);
         return 0;
     }
     buffer[strcspn(buffer, "\n")] = 0;
@@ -407,30 +310,24 @@ int get_string(char buffer[])
 
 void clear_buffer(char buffer[])
 {
-    memset(buffer,0,BUFFER_SIZE+2);
+    memset(buffer, 0, BUFFER_SIZE+2);
 }
 
 void dashes(int n)
 {
-    for(int i = 0; i < n; i++)
-    {
-        printf("-");
-    }
+    for(int i = 0; i < n; i++) printf("-");
+    printf("\n");
 }
 
 void newline(int n)
 {
-    for(int i = 0; i < n; i++)
-    {
-        printf("\n");
-    }
+    for(int i = 0; i < n; i++) printf("\n");
 }
 
 void display_options(string txt)
 {
     newline(1);
     dashes(20);
-    newline(1);
     printf("Options:\n");
     printf("1- Enter text.\n");
     if(length(txt) > 0)
@@ -441,7 +338,6 @@ void display_options(string txt)
     }
     printf("0- Exit.\n");
     dashes(20);
-    newline(1);
 }
 
 void display_text(string str)
@@ -450,25 +346,22 @@ void display_text(string str)
     newline(1);
     printf("Your text: \n");
     dashes(10);
-    newline(1);
     print(str);
-    newline(1);
-    newline(1);
+    newline(2);
 }
 
-void take_choice(int *choice)
+int take_choice(int *choice, char ntf[])
 {
-    beginning:
     printf("Your choice: ");
     if(scanf("%d", choice) != 1)
     {
-        printf("\nInvalid input... your input may only contain numeric values.\n");
+        strcpy(ntf, "\nInvalid input... your input may only contain numeric values.\n");
         *choice = 0;
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF);
-        goto beginning;
+        flush();
+        return 0;
     }
     getchar();
+    return 1;
 }
 
 int search(string text, string target)
@@ -511,12 +404,12 @@ int search(string text, string target)
 string create_segment_string(string str)
 {
     node *curr = str->next;
-    node *copy_head = (node*)malloc(sizeof(node));
+    node *copy_head = new_node('\0');
     node *copy = copy_head;
     while(curr != NULL)
     {
         copy->letter = curr->letter;
-        copy->next = curr->next == NULL ? NULL : (node*)malloc(sizeof(node));
+        copy->next = curr->next == NULL ? NULL : new_node('\0');
         copy = copy->next;
         curr = curr->next;
     }
@@ -582,22 +475,6 @@ void clear_screen()
     printf("\e[1;1H\e[2J");
 }
 
-int is_separator(char c)
-{
-    char separators[] = " !\"#$&'()*+,-./:;<=>?@[\\]^_`{|}~";
-    int i = 0;
-    while(separators[i] != '\0')
-    {
-        if(c == separators[i])
-        {
-            printf("\n|THE SEPARATOR: %c|\n", separators[i]);
-            return 1;
-        }
-        i++;
-    }
-    return 0;
-}
-
 int is_alphanumeric(char c)
 {
     return (c > 47 && c < 58) || (c > 64 && c < 91) || (c > 96 && c < 123);
@@ -610,6 +487,7 @@ int contains_separator(char str[])
     {
         if(!is_alphanumeric(str[i]))
         {
+            printf("\nYour input may only contain alphanumeric characters. (No spaces or symbols)\n\n");
             return 1;
         }
         i++;
@@ -619,8 +497,7 @@ int contains_separator(char str[])
 
 int same_letter_insensitive(char a, char b)
 {
-    if((a == b) || ((a > 96 && a < 123) && (a - 32) == b) || ((a > 64 && a < 91) && (a + 32) == b)) return 1;
-    return 0;
+    return (a == b) || ((a > 96 && a < 123) && (a - 32) == b) || ((a > 64 && a < 91) && (a + 32) == b);
 }
 
 void display_notification(char str[])
@@ -628,10 +505,81 @@ void display_notification(char str[])
     if(strlen(str) <= 0) return;
     printf("Notifications:\n");
     dashes(14);
-    newline(1);
     printf("%s",str);
     newline(1);
     dashes(20);
-    newline(1);
     clear_buffer(str);
+}
+
+void flush()
+{
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+void search_ntf(int occs, char buffer[], char ntf[])
+{
+    if(occs <= 0)
+    {
+        strcpy(ntf, "\nNo occurrences of the word \"");
+        strcat(ntf, buffer);
+        strcat(ntf, "\" were found.\n");
+    }
+    else if(occs == 1)
+    {
+        strcpy(ntf, "\n1 occurrence of the word \"");
+        strcat(ntf, buffer);
+        strcat(ntf, "\" was found.\n");
+    }
+    else
+    {
+        strcpy(ntf, "\n");
+
+        char number[BUFFER_SIZE+2];
+        sprintf(number, "%d", occs);
+
+        strcat(ntf, number);
+
+        strcat(ntf, " occurrences of the word \"");
+        strcat(ntf, buffer);
+        strcat(ntf, "\" were found.\n");
+    }
+}
+
+void refresh(string main_text, char ntf[])
+{
+    clear_screen();
+    display_notification(ntf);
+    display_text(main_text);
+    display_options(main_text);
+}
+
+void replace_ntf(int replaced, char replacable[], char buffer[], char ntf[])
+{
+    if(replaced <= 0)
+    {
+        strcpy(ntf, "\nNo words were replaced.\n");
+    }
+    else if(replaced == 1)
+    {
+        strcpy(ntf, "\n1 occurrence of the word \"");
+        strcat(ntf, replacable);
+        strcat(ntf, "\" was replaced with \"");
+        strcat(ntf, buffer);
+        strcat(ntf, "\".\n");
+    }
+    else
+    {
+        strcpy(ntf, "\n");
+
+        char number[BUFFER_SIZE+2];
+        sprintf(number, "%d", replaced);
+
+        strcat(ntf, number);
+        strcat(ntf, " occurrences of the word \"");
+        strcat(ntf, replacable);
+        strcat(ntf, "\" were replaced with \"");
+        strcat(ntf, buffer);
+        strcat(ntf, "\".\n");
+    }
 }
