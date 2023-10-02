@@ -24,9 +24,9 @@ void print(string);
 
 string new_string(char[]);
 
-int get_string(char[BUFFER_SIZE], char[], string);
+int get_string(char[], char[], string);
 
-void clear_buffer(char[BUFFER_SIZE]);
+void clear_buffer(char[]);
 
 void free_string(string);
 
@@ -96,7 +96,7 @@ int main()
         case 0:
             goto exit_option;
         default:
-            strcpy(notification, "\nInvalid input...\n");
+            strcat(notification, "\nInvalid input...\n");
             goto start;
     }
 
@@ -105,13 +105,17 @@ int main()
     if(!get_string(buffer, notification, main_text)) goto append;
     string input = new_string(buffer);
     append_string(main_text, input);
+    char number[BUFFER_SIZE+2];
+    sprintf(number, "%d", length(input));
+    strcat(notification, number);
+    strcat(notification, " new characters were appended.");
     free_string(input);
     goto start;
 
     search:
     if(main_text_len <= 0)
     {
-        strcpy(notification, "\nInvalid input...\n");
+        strcat(notification, "\nInvalid input...\n");
         goto start;
     }
     printf("Please enter the word that you would like to find: ");
@@ -129,7 +133,7 @@ int main()
     replace:
     if(main_text_len <= 0)
     {
-        strcpy(notification, "\nInvalid input...\n");
+        strcat(notification, "\nInvalid input...\n");
         goto start;
     }
     printf("Please enter the word that you would like to replace: ");
@@ -157,7 +161,7 @@ int main()
     delete_option:
     if(main_text_len <= 0)
     {
-        strcpy(notification, "\nInvalid input...\n");
+        strcat(notification, "\nInvalid input...\n");
         goto start;
     }
     printf("Are you sure? All of your text will be lost. (1 = Delete | 0 = Cancel)\n");
@@ -174,7 +178,7 @@ int main()
     case 0:
         goto start;
     default:
-        strcpy(notification, "\nInvalid input...\n");
+        strcat(notification, "\nInvalid input...\n");
         refresh(main_text, notification);
         goto delete_option;
     }
@@ -195,7 +199,7 @@ int main()
     case 0:
         goto start;
     default:
-        strcpy(notification, "\nInvalid input...\n");
+        strcat(notification, "\nInvalid input...\n");
         refresh(main_text, notification);
         goto exit_option;
     }
@@ -294,13 +298,13 @@ int get_string(char buffer[], char ntf[], string main_text)
 {
     clear_buffer(buffer);
     if(fgets(buffer, BUFFER_SIZE, stdin) == NULL) {
-        strcpy(ntf, "\nInvalid input...\n");
+        strcat(ntf, "\nInvalid input...\n");
         refresh(main_text, ntf);
         return 0;
     }
     if(strchr(buffer, '\n') == NULL)
     {
-        strcpy(ntf, "\nThe input exceeded the maximum amount of characters (");
+        strcat(ntf, "\nThe input exceeded the maximum amount of characters (");
 
         char number[BUFFER_SIZE+2];
         sprintf(number, "%d", BUFFER_SIZE);
@@ -314,11 +318,6 @@ int get_string(char buffer[], char ntf[], string main_text)
     }
     buffer[strcspn(buffer, "\n")] = 0;
     return 1;
-}
-
-void clear_buffer(char buffer[])
-{
-    memset(buffer, 0, BUFFER_SIZE+2);
 }
 
 void dashes(int n)
@@ -363,7 +362,7 @@ int take_choice(int *choice, char ntf[], string main_text)
     printf("Your choice: ");
     if(scanf("%d", choice) != 1)
     {
-        strcpy(ntf, "\nInvalid input... your input may only contain numeric values.\n");
+        strcat(ntf, "\nInvalid input... your input may only contain numeric values.\n");
         *choice = 0;
         flush();
         return 0;
@@ -496,7 +495,7 @@ int contains_separator(char str[], char ntf[])
     {
         if(!is_alphanumeric(str[i]))
         {
-            strcpy(ntf, "\nYour input may only contain alphanumeric characters. (No spaces or symbols)\n\n");
+            strcat(ntf, "\nYour input may only contain alphanumeric characters. (No spaces or symbols)\n\n");
             return 1;
         }
         i++;
@@ -530,19 +529,19 @@ void search_ntf(int occs, char buffer[], char ntf[])
 {
     if(occs <= 0)
     {
-        strcpy(ntf, "\nNo occurrences of the word \"");
+        strcat(ntf, "\nNo occurrences of the word \"");
         strcat(ntf, buffer);
         strcat(ntf, "\" were found.\n");
     }
     else if(occs == 1)
     {
-        strcpy(ntf, "\n1 occurrence of the word \"");
+        strcat(ntf, "\n1 occurrence of the word \"");
         strcat(ntf, buffer);
         strcat(ntf, "\" was found.\n");
     }
     else
     {
-        strcpy(ntf, "\n");
+        strcat(ntf, "\n");
 
         char number[BUFFER_SIZE+2];
         sprintf(number, "%d", occs);
@@ -567,13 +566,13 @@ void replace_ntf(int replaced, char replacable[], char buffer[], char ntf[])
 {
     if(replaced <= 0)
     {
-        strcpy(ntf, "\nNo words were replaced. (the word \"");
+        strcat(ntf, "\nNo words were replaced. (the word \"");
         strcat(ntf, replacable);
         strcat(ntf, "\" was not found in the text)\n");
     }
     else if(replaced == 1)
     {
-        strcpy(ntf, "\n1 occurrence of the word \"");
+        strcat(ntf, "\n1 occurrence of the word \"");
         strcat(ntf, replacable);
         strcat(ntf, "\" was replaced with \"");
         strcat(ntf, buffer);
@@ -581,7 +580,7 @@ void replace_ntf(int replaced, char replacable[], char buffer[], char ntf[])
     }
     else
     {
-        strcpy(ntf, "\n");
+        strcat(ntf, "\n");
 
         char number[BUFFER_SIZE+2];
         sprintf(number, "%d", replaced);
@@ -593,4 +592,9 @@ void replace_ntf(int replaced, char replacable[], char buffer[], char ntf[])
         strcat(ntf, buffer);
         strcat(ntf, "\".\n");
     }
+}
+
+void clear_buffer(char buffer[])
+{
+    memset(buffer, 0, BUFFER_SIZE+2);
 }
