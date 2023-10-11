@@ -93,6 +93,8 @@ int main()
             goto replace;
         case 4:
             goto delete_option;
+        case 5:
+            goto print_buffer;
         case 0:
             goto exit_option;
         default:
@@ -182,6 +184,24 @@ int main()
         refresh(main_text, notification);
         goto delete_option;
     }
+
+    print_buffer:
+    display_text(main_text);
+    printf("Enter '1' to continue...\n");
+    if(!take_choice(&choice, notification, main_text)) 
+    {
+        refresh(main_text, notification);
+        goto print_buffer;
+    }
+    switch(choice)
+    {
+    case 1: goto start;
+    default:
+        strcat(notification, "\nInvalid input...\n");
+        refresh(main_text, notification);
+        goto print_buffer;
+    }
+    goto start;
 
     exit_option:
     printf("Are you sure that you want to exit the program? (1 = Exit | 0 = Cancel)\n");
@@ -342,6 +362,7 @@ void display_options(string txt)
         printf("2- Search for word.\n");
         printf("3- Replace word.\n");
         printf("4- Delete.\n");
+        printf("5- Display buffer.\n");
     }
     printf("0- Exit.\n");
     dashes(20);
@@ -558,7 +579,6 @@ void refresh(string main_text, char ntf[])
 {
     clear_screen();
     display_notification(ntf);
-    display_text(main_text);
     display_options(main_text);
 }
 
